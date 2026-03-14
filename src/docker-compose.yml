@@ -1,0 +1,6 @@
+services:
+  catalogdb:
+    image: postgres:18.1-alpine3.22
+
+volumes:
+  eshop_postgres_catalog: {}

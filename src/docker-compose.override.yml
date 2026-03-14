@@ -1,0 +1,12 @@
+services:
+  catalogdb:
+    container_name: eshop_catalogdb
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=EShop.Catalog
+    restart: always
+    volumes:
+      - eshop_postgres_catalog:/var/lib/postgresql/data
