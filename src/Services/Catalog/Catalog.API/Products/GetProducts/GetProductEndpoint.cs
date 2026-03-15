@@ -2,11 +2,12 @@ using Carter;
 using Catalog.API.Models;
 using Mapster;
 using MediatR;
+using SharedModels.Models;
 
 namespace Catalog.API.Products.GetProducts
 {
     public record GetProductsParamaters(int Page = 1, int Size = 10);
-    public record GetProductsResponse(IEnumerable<Product> Products, bool HasNextPage, bool HasPrevPage, long TotalItems, long PageSize, long PageNumber);
+    public record GetProductsResponse(IEnumerable<Product> Products, Pagination Pagination);
 
     public class GetProductsEndpoint(ILogger<GetProductsEndpoint> logger) : ICarterModule
     {
@@ -21,7 +22,7 @@ namespace Catalog.API.Products.GetProducts
                 var resp = result.Adapt<GetProductsResponse>();
 
                 // Log some information
-                logger.LogDebug($"Fetch products: page {resp!.PageNumber}; size {resp.PageSize}; total {resp.TotalItems}");
+                logger.LogDebug($"Fetch products: page {resp!.Pagination.PageNumber}; size {resp.Pagination.PageSize}; total {resp.Pagination.TotalItems}");
 
                 return Results.Ok(resp);
             })

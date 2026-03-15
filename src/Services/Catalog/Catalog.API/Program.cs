@@ -1,4 +1,5 @@
 using Carter;
+using Mapster;
 using Marten;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +15,7 @@ builder.Services.AddMarten(options =>
     options.Connection(builder.Configuration.GetConnectionString("DefaultConn")!);
 })
 .UseLightweightSessions();
-
+TypeAdapterConfig.GlobalSettings.Scan(AppDomain.CurrentDomain.GetAssemblies()); // Config for custom Mapster
 var app = builder.Build();
 
 // Add middleware

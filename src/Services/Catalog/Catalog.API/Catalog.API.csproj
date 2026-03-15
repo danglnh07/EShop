@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\BuildingBlocks\BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\Shared\SharedModels\SharedModels.csproj" />
   </ItemGroup>
 
   <ItemGroup>
