@@ -1,6 +1,7 @@
 using BuildingBlocks.CQRS;
 using Catalog.API.Models;
 using Marten;
+using SharedModels.Models;
 
 namespace Catalog.API.Products.CreateProduct
 {
@@ -8,12 +9,12 @@ namespace Catalog.API.Products.CreateProduct
                                        string Description,
                                        List<string> Categories,
                                        string Image,
-                                       decimal Price) : ICommand<CreateProductResult>;
+                                       decimal Price) : ICommand<Result<CreateProductResult>>;
     public record CreateProductResult(Guid Id);
 
-    internal class CreateProductCommandHandler(IDocumentSession session) : ICommandHandler<CreateProductCommand, CreateProductResult>
+    internal class CreateProductCommandHandler(IDocumentSession session) : ICommandHandler<CreateProductCommand, Result<CreateProductResult>>
     {
-        public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
+        public async Task<Result<CreateProductResult>> Handle(CreateProductCommand command, CancellationToken cancellationToken)
         {
             // Create entity
             var product = new Product()
@@ -30,7 +31,7 @@ namespace Catalog.API.Products.CreateProduct
             await session.SaveChangesAsync(cancellationToken);
 
             // Return result with product ID
-            return new(product.Id);
+            return Result<CreateProductResult>.Success(new(product.Id));
         }
     }
 }

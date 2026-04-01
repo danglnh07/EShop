@@ -1,4 +1,6 @@
+using BuildingBlocks.Behaviours;
 using Carter;
+using FluentValidation;
 using Mapster;
 using Marten;
 
@@ -9,12 +11,14 @@ builder.Services.AddCarter();
 builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    config.AddOpenBehavior(typeof(ValidationBehaviour<,>));
 });
 builder.Services.AddMarten(options =>
 {
     options.Connection(builder.Configuration.GetConnectionString("DefaultConn")!);
 })
 .UseLightweightSessions();
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 TypeAdapterConfig.GlobalSettings.Scan(AppDomain.CurrentDomain.GetAssemblies()); // Config for custom Mapster
 var app = builder.Build();
 
