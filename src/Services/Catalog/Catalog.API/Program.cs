@@ -1,9 +1,12 @@
 using BuildingBlocks.Behaviours;
 using Carter;
+using Catalog.API.Data;
 using FluentValidation;
+using HealthChecks.UI.Client;
 using Mapster;
 using Marten;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,11 +31,21 @@ builder.Services.AddMarten(options =>
 })
 .UseLightweightSessions();
 
+if (builder.Environment.IsDevelopment())
+{
+    // Only seed data in development environment
+    builder.Services.InitializeMartenWith<Initializer>();
+}
+
 // Add validators
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 // Configure adapter for Mapster
 TypeAdapterConfig.GlobalSettings.Scan(AppDomain.CurrentDomain.GetAssemblies()); // Config for custom Mapster
+
+// Add service health check
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConn")!);
 
 var app = builder.Build();
 
@@ -77,6 +90,11 @@ app.UseExceptionHandler(config =>
 
         await context.Response.WriteAsJsonAsync(problemDetails);
     });
+});
+
+app.UseHealthChecks("/health", new HealthCheckOptions()
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
 
 app.Run();
