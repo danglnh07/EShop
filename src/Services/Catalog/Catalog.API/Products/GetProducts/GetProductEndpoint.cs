@@ -6,7 +6,7 @@ using SharedModels.Models;
 
 namespace Catalog.API.Products.GetProducts
 {
-    public record GetProductsParamaters(int Page = 1, int Size = 10);
+    public record GetProductsParamaters(int Page = 1, int Size = 10, string? Category = null);
     public record GetProductsResponse(IEnumerable<Product> Products, Pagination Pagination);
 
     public class GetProductsEndpoint(ILogger<GetProductsEndpoint> logger) : ICarterModule
@@ -15,14 +15,24 @@ namespace Catalog.API.Products.GetProducts
         {
             app.MapGet("/products", async ([AsParameters] GetProductsParamaters param, ISender sender) =>
             {
+                // Create query object
+                var query = param.Adapt<GetProductsQuery>();
+                if (query is null)
+                {
+                    logger.LogWarning($"Query object is null");
+                    return Results.StatusCode(500);
+                }
+
                 // Send command object to handler
-                var result = await sender.Send(param.Adapt<GetProductsQuery>()!);
+                var result = await sender.Send(query);
 
                 // Create and return response
                 var resp = result.Adapt<GetProductsResponse>();
-
-                // Log some information
-                logger.LogDebug($"Fetch products: page {resp!.Pagination.PageNumber}; size {resp.Pagination.PageSize}; total {resp.Pagination.TotalItems}");
+                if (resp is null)
+                {
+                    logger.LogWarning($"Response object is null");
+                    return Results.StatusCode(500);
+                }
 
                 return Results.Ok(resp);
             })

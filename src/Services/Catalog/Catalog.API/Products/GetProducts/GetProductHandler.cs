@@ -5,7 +5,7 @@ using Marten.Pagination;
 
 namespace Catalog.API.Products.GetProducts
 {
-    public record GetProductsQuery(int Page = 1, int Size = 10) : IQuery<GetProductsResult>;
+    public record GetProductsQuery(int Page = 1, int Size = 10, string? Category = null) : IQuery<GetProductsResult>;
     public record GetProductsResult(IPagedList<Product> Products);
 
     public class GetProductQueryHandler(IDocumentSession session) : IQueryHandler<GetProductsQuery, GetProductsResult>
@@ -13,9 +13,14 @@ namespace Catalog.API.Products.GetProducts
         public async Task<GetProductsResult> Handle(GetProductsQuery query, CancellationToken cancellationToken)
         {
             // Get product by ID from database as document using Marten
-            var products = await session.Query<Product>().ToPagedListAsync(query.Page, query.Size, cancellationToken);
+            if (query.Category is not null)
+            {
+                return new(await session.Query<Product>()
+                    .Where(product => product.Categories.Contains(query.Category))
+                    .ToPagedListAsync(query.Page, query.Size, cancellationToken));
+            }
 
-            return new(products);
+            return new(await session.Query<Product>().ToPagedListAsync(query.Page, query.Size, cancellationToken));
         }
     }
 }
